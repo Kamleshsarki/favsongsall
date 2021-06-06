@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h3>Favorite Songs Applications</h3>
+    <form>
+        <p>
+            <label for = "title">Title</label>
+            <input type = "text" name = "title" id = "title">
+        </p>
+
+        <p>
+            <label for ="artist">Artist</label>
+            <input type="text" name = "artist" id ="artist">
+        </p>
+        <p>
+            <button id="addSong">Add Song</button>
+        </p>
+    </form>
+
+    <div id="songs"></div>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script>
+
+        //get songs from server
+        axios.get('/songs')
+        .then(({data})=>{
+            document.getElementById('songs').innerHTML = ""
+       data.forEach(song=>{
+           let songElem = document.createElement('div')
+           songElem.innerHTML = `
+           <p>${song.title} by ${song.artist} <button class ="deleteSong" data-title="${song.title}">X</button></p>
+           
+           `
+           document.getElementById('songs').append(songElem)
+
+       })
+        })
+         .catch(e=>console.error(e))  
+
+//add songs
+
+document.getElementById('addSong').addEventListener('click', event =>{
+    event.preventDefault()
+let song={
+    title: document.getElementById('title').value,
+    artist: document.getElementById('artist').value
+}
+    axios.post('/songs', song)
+    .then(()=>{
+        let songElem = document.createElement('div')
+           songElem.innerHTML = `
+           <p>${song.title} by ${song.artist}<button class ="deleteSong" data-title= "${song.title}">X</button></p>
+        `
+        document.getElementById('songs').append(songElem)
+        document.getElementById('title').value = ''
+        document.getElementById('artist').value = ''
+    })
+    .catch(e=> console.error(e))
+})
+document.addEventListener('click', event =>{
+    if(event.target.className==='deleteSong')
+    axios.delete(`/songs/${event.target.dataset.title}`)
+    .then(()=>{
+        event.target.parentNode.parentNode.remove()
+    })
+})        
+    </script>
+</body>
+</html>
